@@ -234,3 +234,199 @@ The policy iteration algorithm learns for each webpage what is the best position
 This brings us to the end of the policy iteration algorithm. You can try modifying the policy iteration code to make it value iteration.
 
 In the next session, you'll learn about the model-free methods.
+
+## Model-Free Methods
+
+### Introduction
+Welcome to the session on Model-Free Methods.
+
+In the last session, you learnt to solve reinforcement learning problems using Dynamic Programming (DP) through:
+* Policy Iteration 
+* Value Iteration
+
+![title](img/model-free.JPG)
+
+Although in practice, model-based methods have limited utility, the ideas of **prediction** and **control** will be reused in model-free methods as well.
+
+In this session, we'll look into some of the model-free methods, in particular, **Monte-Carlo** & **Temporal Difference**.
+
+### Intuition behind Monte-Carlo Methods
+Let's start with Monte-Carlo methods.
+
+Monte-Carlo method is based on the concept of **the law of large numbers**. In the upcoming segment, we will briefly explain the law.
+
+The **law of large numbers** says that if you take a very large sample, it will give similar results as to what you would get if you would have known the actual distribution of the samples.
+
+The **expected value** of a random variable is the weighted average over the probabilistic distribution values. It can also be thought of as the average (or mean) of a (~infinitely) large enough sample drawn from the same distribution.
+
+![title](img/expected_value.JPG)
+
+In the following segment, we will explain how Monte-Carlo methods exploit the above two ideas to estimate Q-values.
+
+![title](img/expected_value1.JPG)
+
+Let's first rearrange the Q-value function a bit.
+
+![title](img/expected_value2.JPG)
+
+### Monte-Carlo Prediction
+**Prediction** and **control** are two integral steps to solve any Reinforcement learning problem.
+* **Prediction** - evaluating the value function/policy
+* **Control** - improving the policy basis the state-value function estimates
+
+Let's start with the prediction in the Monte-Carlo method.
+
+![title](img/monte_carlo.JPG)
+
+![title](img/exploring_starts.JPG)
+
+### Monte-Carlo Prediction - Demo
+
+![title](img/monte_carlo_demo.JPG)
+
+Similarly, you can write this for all other state-action pairs that have been visited in the episode.
+
+Episode 2: (S3, A2, 7), (S1, A1, 5), (S7, A9, 6),(S4, A5, 4), (S6, A10,3)
+
+![title](img/q1.JPG)
+
+![title](img/ans1.JPG)
+
+![title](img/q2.JPG)
+
+![title](img/ans2.JPG)
+
+Let's try running for one more episode:
+
+![title](img/monte_carlo_demo1.JPG)
+
+### Monte-Carlo Control
+In the last segment, you learnt how to **evaluate Q-function for a given policy**. Now, you can use these q-values for the **control** problem. 
+
+Recall that the control problem is to improve the existing policy in order to find an optimal policy. Let's see how you can do it.
+
+**Please note** that A(s) represents the action space, i.e. the total number of actions that are possible in any given state. We talks about the ϵ-greedy approach in the following segment, you will study that later on this page.
+
+![title](img/monte_carlo_control.JPG)
+
+![title](img/monte_carlo_control1.JPG)
+
+**Please note** that in the upcoming segment:
+* **Exploration** refers to the scenario where you do not follow the actions suggested by the policy. Instead, you go and explore some other actions.
+* **Exploitation** refers to the scenario where you religiously follow the actions suggested by the policy.
+
+Let's understand what it means to have a **ϵ-greedy policy**.
+
+![title](img/monte_carlo_control2.JPG)
+
+![title](img/monte_carlo_control3.JPG)
+
+### Off Policy
+In the previous few segments, you learnt that the **control problem** seeks the **best action values** for the agent to behave optimally.
+
+However, the agent has to behave non-optimally in order to explore other actions (i.e. the actions that are not given by the policy), to find better action than already existing one.
+
+How does the agent learn the optimal policy while it is continuing to explore? In the following segment we will explain this in detail.
+
+A way to handle the dilemma of exploring and exploitation is by using two policies:
+* **Target Policy**: the policy that is learnt by the agent and that becomes the optimal policy
+* **Behaviour Policy**:  the policy that is used to generate the episodes and is more exploratory in nature
+
+This is called **off-policy** because the agent is learning from data 'off' the behavior policy.
+
+In another case, if the (optimal) policy learnt and the policy that is used to generate episodes are the same, it is called **on-policy** learning. 
+
+![title](img/off-policy.JPG)
+
+![title](img/importance_sampling.JPG)
+
+### Temporal Difference
+In the earlier segments, you learnt about **Monte-Carlo Prediction & Control**. There are some inherent issues with Monte-Carlo. To start with, you need to wait until the end of the episode to update the expected rewards for a state-action pair.
+
+In the following segment, we explain some other practical problems with Monte-Carlo and how these issues led to the development of **Temporal Difference** learning.
+
+Similar to Monte-Carlo, **Temporal Difference (TD)** methods also learn directly from experience without an explicit model of the environment.
+
+The major difference between these two methods is:
+* In Monte Carlo methods, you need to wait until the end of the episode and then update the q-value
+* In TD methods, you can update the value after every few time steps. This update mechanism is often advantageous since it gives the agent early signals if some of the eventual states are disastrous, and so the agent avoids that path altogether.
+
+Let's understand this through an example.
+
+Say there are two agents in a **chemical plant**. One is learning using Monte-Carlo while the other is learning using TD. Each day is a new episode for them. One day, they both **changed the similar valves** (action). The pressure in one of the tube increased too much and the yield of the product started decreasing (the reward started becoming negative). The TD agent will update the q-value of this action (i.e. reduce it immediately) and will instead take some other action that will increase the future rewards. On the other hand, the Monte-Carlo agent will continue taking actions according to its policy. The pressure could increase beyond a threshold level leading to a blast. After this episode, the MC agent would realise that the action (of turning that valve) was quite bad and update the policy accordingly, though the TD agent cleverly avoided all the trouble altogether.
+
+In the next segment, you'll learn how to update the q-value at each step in TD.
+
+### Q-Learning
+Let's now learn to write the **Temporal Difference** (TD) update equation.
+
+![title](img/temporal_difference.JPG)
+
+Let's understand the TD algorithm using a small example:
+
+Say you played the game of Chess **10,000 times** (episodes) over a period of 5 years. You have learnt that when you take a particular action from some board position, you always end up getting a high reward - the q(s, a) is 100 for that state-action pair. Today, when you played the game, you got a total reward of 70 (starting from the same state-action pair). How will you update the value of q(s, a)? You cannot directly make it 70 as you can't ignore the learning of 5 years. Also, intuitively, you know that the updated value should be lesser than 100 (since the latest reward of 70 is lesser than 100). So you'll update the q-value incrementally in the direction of the new, latest learning.
+
+![title](img/temporal_difference1.JPG)
+
+TD update equation relies on a similar idea. There are many different versions of TD update. The only difference in all updates is the calculation of current value. In this module, we'll cover only **Q-learning**. 
+
+### Q-Learning
+
+![title](img/q-learning.JPG)
+
+In the next lecture, we will explain how you can write the update equations for different state-action pairs. 
+
+Q-learning learns the optimal policy 'relentlessly' because the estimates of q-values are updated based on the q-value of the next state-action pair **assuming the greediest action will be taken subsequently**.
+
+If there is a risk of a large negative reward close to the optimal path, Q-learning will tend to trigger that reward while exploring. And in practice, if the mistakes are costly, you don't want Q-learning to explore more of these negative rewards. You will want something more conservative.
+
+There are other approaches like  SARSA, Double Q-learning, which are more conservative and avoid high risk. Please note that these two techniques are provided as optional reading for interested students.
+
+**Additional Reading**
+* This segment covers only TD(0) update, which is only a one-step update, i.e., the agent takes one step and update q-value. In general, you could consider λ steps. And such methods are called TD(λ). You can read more about it [here](https://amreis.github.io/ml/reinf-learn/2017/11/02/reinforcement-learning-eligibility-traces.html).
+* Apart from the update step difference, there are some other implicit differences between Monte-Carlo and Temporal Difference. You can read more [here](https://stats.stackexchange.com/questions/336974/when-are-monte-carlo-methods-preferred-over-temporal-difference-ones).
+
+### Q-Learning Pseudocode
+In this segment, you'll learn the pseudocode of Q-Learning. The update equation for Q-learning is: 
+
+![title](img/q-learning1.JPG)
+
+![title](img/q-learning2.JPG)
+
+![title](img/q-learning3.JPG)
+
+Let's look at the value iteration calculations in more detail in the next segment.
+
+### Cliff Walking Demo
+In this segment, you'll learn to solve for an optimal stochastic policy using Monte-Carlo and Q-Learning algorithm for GridWorld environment. First, let's see how Monte-Carlo (first-visit) agent works.
+
+![title](img/cliff_walking.png)
+
+![title](img/cliff_walking1.JPG)
+
+![title](img/cliff_walking2.JPG)
+
+![title](img/cliff_walking3.JPG)
+
+![title](img/cliff_walking4.JPG)
+
+So, this is how Q-learning works. This demonstration was just to get you more familiar with the calculations of Monte-Carlo and Q-Learning. It's easier to write code once you get the basic math for solving these algorithms.
+
+### Ad Placement Optimization Demo -Q Learning
+
+![title](img/ad_placement.JPG)
+
+[AD Placement - Q Learning](data/Ad+Placement+Optimization_RL.ipynb)
+
+Similar to Dynamic Programming, Q-Learning agent has learnt the exact solution to the problem. The policy at each webpage is placing the ad at a position where the user has clicked.
+
+An important thing to notice is that ϵ is decaying with the number of episodes. It is important for the agent to both explore and exploit. This decay rate allows the agent to make completely random moves to explore the state space maximally, and then to settle down to a fixed exploration rate. 
+
+### OpenAI Gym -Taxi v2
+Founded by Elon Musk and Sam Altman, **OpenAI** is a non-profit research company that is focussed on building out AI algorithms. **OpenAI Gym** is a toolkit for developing and comparing reinforcement learning algorithms. Gym provides different environments to implement various reinforcement learning algorithms.
+ 
+This segment is to make you familiar with OpenAI Gym. You'll learn to use these environments and try running RL algorithms on it.  In the following segment, we will walk you through OpenAI Gym environment -Taxi-v2 and how to use it. You can download the Jupyter notebook for your reference.
+
+[Open AI Gym Env](data/Taxi-v2.ipynb)
+
+Now, we has explained the MDP for Taxi-v2. It's an exercise for you to apply Q-Learning on it. We've shared the Q-Learning and SARSA implementation code with you. But, it's important that you try writing the code on your own. It will help later when you go to the next module on **Deep Reinforcement Learning**.
